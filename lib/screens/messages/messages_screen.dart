@@ -81,8 +81,10 @@ class MessagesScreen extends StatelessWidget {
               // ─── Message list ───
               Expanded(
                 child: ListView(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.screenPadding,
+                  padding: const EdgeInsets.only(
+                    left: AppSpacing.screenPadding,
+                    right: AppSpacing.screenPadding,
+                    bottom: 90,
                   ),
                   children: [
                     _ConversationTile(
@@ -153,13 +155,16 @@ class MessagesScreen extends StatelessWidget {
         ),
       ),
       // FAB: Giả lập tin nhắn
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.push('/simulator'),
-        backgroundColor: AppColors.primary,
-        icon: const Icon(Icons.science_rounded, color: Colors.white),
-        label: Text(
-          'Giả lập',
-          style: AppTextStyles.labelMedium(color: Colors.white),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 80),
+        child: FloatingActionButton.extended(
+          onPressed: () => context.push('/simulator'),
+          backgroundColor: AppColors.primary,
+          icon: const Icon(Icons.science_rounded, color: Colors.white),
+          label: Text(
+            'Giả lập',
+            style: AppTextStyles.labelMedium(color: Colors.white),
+          ),
         ),
       ),
     );
