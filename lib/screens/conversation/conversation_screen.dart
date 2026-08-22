@@ -18,36 +18,12 @@ class _ConversationScreenState extends State<ConversationScreen> {
 
   // Mock messages
   final List<_ChatMessage> _messages = [
-    _ChatMessage(
-      text: 'Anh ơi, chiều nay mình đi ăn lẩu không?',
-      isMe: false,
-      time: '10:30',
-    ),
-    _ChatMessage(
-      text: 'OK em, lẩu nào vậy?',
-      isMe: true,
-      time: '10:31',
-    ),
-    _ChatMessage(
-      text: 'Lẩu Thái nhé! Quán ở đường Nguyễn Huệ ấy, anh biết không?',
-      isMe: false,
-      time: '10:32',
-    ),
-    _ChatMessage(
-      text: 'Biết rồi, quán quen mà 😄',
-      isMe: true,
-      time: '10:32',
-    ),
-    _ChatMessage(
-      text: 'Vậy 6h chiều nhé anh!',
-      isMe: false,
-      time: '10:33',
-    ),
-    _ChatMessage(
-      text: 'Anh ơi đến đâu rồi? Em đợi ở quán cà phê nhé.',
-      isMe: false,
-      time: '17:45',
-    ),
+    _ChatMessage(text: 'Anh ơi, chiều nay mình đi ăn lẩu không?', isMe: false, time: '10:30'),
+    _ChatMessage(text: 'OK em, lẩu nào vậy?', isMe: true, time: '10:31'),
+    _ChatMessage(text: 'Lẩu Thái nhé! Quán ở đường Nguyễn Huệ ấy, anh biết không?', isMe: false, time: '10:32'),
+    _ChatMessage(text: 'Biết rồi, quán quen mà 😄', isMe: true, time: '10:32'),
+    _ChatMessage(text: 'Vậy 6h chiều nhé anh!', isMe: false, time: '10:33'),
+    _ChatMessage(text: 'Anh ơi đến đâu rồi? Em đợi ở quán cà phê nhé.', isMe: false, time: '17:45'),
   ];
 
   // AI quick reply suggestions
@@ -64,11 +40,28 @@ class _ConversationScreenState extends State<ConversationScreen> {
     super.dispose();
   }
 
+  void _sendMessage() {
+    final text = _messageController.text.trim();
+    if (text.isEmpty) return;
+    setState(() {
+      _messages.add(_ChatMessage(text: text, isMe: true, time: '17:46'));
+      _messageController.clear();
+    });
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final surfaceColor = isDark ? AppColors.darkSurface : AppColors.lightSurface;
-    final surfaceVariant = isDark ? AppColors.darkSurfaceVariant : AppColors.lightSurfaceVariant;
     final borderColor = isDark ? AppColors.darkBorder : AppColors.lightBorder;
     final textColor = isDark ? Colors.white : AppColors.lightOnSurface;
     final subtextColor = isDark ? AppColors.darkOnSurfaceVariant : AppColors.lightOnSurfaceVariant;
@@ -81,40 +74,41 @@ class _ConversationScreenState extends State<ConversationScreen> {
           children: [
             // ─── Header ───
             Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 10,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               decoration: BoxDecoration(
                 color: surfaceColor,
                 border: Border(
-                  bottom: BorderSide(color: borderColor, width: 0.5),
+                  bottom: BorderSide(
+                    color: isDark ? AppColors.darkBorder : borderColor,
+                    width: 0.5,
+                  ),
                 ),
               ),
               child: Row(
                 children: [
                   IconButton(
                     onPressed: () => context.pop(),
-                    icon: Icon(
-                      Icons.arrow_back_ios_rounded,
-                      color: textColor,
-                      size: 20,
-                    ),
+                    icon: Icon(Icons.arrow_back_ios_rounded, color: textColor, size: 20),
                   ),
                   Container(
                     width: 40,
                     height: 40,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: AppColors.primary.withValues(alpha: 0.15),
+                      color: AppColors.primary.withValues(alpha: isDark ? 0.15 : 0.1),
                     ),
-                    child: const Icon(
-                      Icons.person_rounded,
-                      color: AppColors.primary,
-                      size: 22,
+                    child: Center(
+                      child: Text(
+                        'AN',
+                        style: TextStyle(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
+                      ),
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -123,28 +117,56 @@ class _ConversationScreenState extends State<ConversationScreen> {
                           'Nguyễn Văn An',
                           style: AppTextStyles.titleMedium(color: textColor),
                         ),
-                        Text(
-                          'Đang hoạt động',
-                          style: AppTextStyles.bodySmall(
-                            color: AppColors.success,
-                          ),
+                        Row(
+                          children: [
+                            Container(
+                              width: 6,
+                              height: 6,
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: AppColors.success,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Đang online',
+                              style: AppTextStyles.bodySmall(color: subtextColor).copyWith(fontSize: 11),
+                            ),
+                          ],
                         ),
                       ],
                     ),
                   ),
-                  // TTS read button
-                  _ActionIcon(
-                    icon: Icons.volume_up_rounded,
-                    onTap: () {},
+                  IconButton(
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Đang đọc toàn bộ tin nhắn mới...'),
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                    },
+                    icon: Icon(Icons.volume_up_rounded, color: subtextColor, size: 22),
                     tooltip: 'Đọc tin nhắn',
                   ),
-                  const SizedBox(width: 4),
-                  _ActionIcon(
-                    icon: Icons.summarize_rounded,
-                    onTap: () {},
-                    tooltip: 'Tóm tắt',
-                  ),
                 ],
+              ),
+            ),
+
+            // ─── AI insight — one subtle line ───
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              color: isDark
+                  ? AppColors.darkSurface
+                  : const Color(0xFFF1F5F9),
+              child: Text(
+                'AI: Bạn bè · Quan trọng — Hẹn gặp tại quán cà phê',
+                style: TextStyle(
+                  color: subtextColor,
+                  fontSize: 11,
+                  fontStyle: FontStyle.italic,
+                ),
               ),
             ),
 
@@ -152,46 +174,30 @@ class _ConversationScreenState extends State<ConversationScreen> {
             Expanded(
               child: ListView.builder(
                 controller: _scrollController,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 itemCount: _messages.length,
                 itemBuilder: (context, index) {
                   final msg = _messages[index];
-                  return _ChatBubble(
-                    message: msg,
-                    receivedBubbleColor: surfaceVariant,
-                    textColor: textColor,
-                    subtextColor: subtextColor,
-                  );
+                  return _ChatBubble(message: msg, isDark: isDark);
                 },
               ),
             ),
 
             // ─── Quick Reply Chips ───
             Container(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+              padding: const EdgeInsets.fromLTRB(16, 6, 16, 6),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.smart_toy_rounded,
-                        size: 14,
-                        color: AppColors.primary,
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        'Gợi ý AI',
-                        style: AppTextStyles.labelSmall(
-                          color: AppColors.primary,
-                        ),
-                      ),
-                    ],
+                  Text(
+                    'Phản hồi nhanh',
+                    style: TextStyle(
+                      color: subtextColor,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 6),
                   Wrap(
                     spacing: 8,
                     runSpacing: 6,
@@ -199,29 +205,26 @@ class _ConversationScreenState extends State<ConversationScreen> {
                       return GestureDetector(
                         onTap: () {
                           setState(() {
-                            _messages.add(_ChatMessage(
-                              text: reply,
-                              isMe: true,
-                              time: '17:46',
-                            ));
+                            _messages.add(_ChatMessage(text: reply, isMe: true, time: '17:46'));
                           });
                         },
                         child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 8,
-                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                           decoration: BoxDecoration(
-                            color: AppColors.primary.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(20),
+                            color: isDark
+                                ? AppColors.darkSurfaceVariant
+                                : AppColors.lightSurfaceVariant,
+                            borderRadius: BorderRadius.circular(16),
                             border: Border.all(
-                              color: AppColors.primary.withValues(alpha: 0.3),
+                              color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
                             ),
                           ),
                           child: Text(
                             reply,
-                            style: AppTextStyles.bodySmall(
-                              color: AppColors.primary,
+                            style: TextStyle(
+                              color: isDark ? const Color(0xFFCBD5E1) : AppColors.lightOnSurface,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ),
@@ -232,71 +235,67 @@ class _ConversationScreenState extends State<ConversationScreen> {
               ),
             ),
 
-            // ─── Input bar ───
+            // ─── Input Bar ───
             Container(
               padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
               decoration: BoxDecoration(
                 color: surfaceColor,
                 border: Border(
-                  top: BorderSide(color: borderColor, width: 0.5),
+                  top: BorderSide(
+                    color: isDark ? AppColors.darkBorder : borderColor,
+                    width: 0.5,
+                  ),
                 ),
               ),
               child: Row(
                 children: [
+                  IconButton(
+                    onPressed: () => context.push('/voice'),
+                    icon: Icon(Icons.mic_rounded, color: AppColors.primary, size: 24),
+                    tooltip: 'Đọc bằng giọng nói',
+                  ),
                   Expanded(
                     child: Container(
+                      height: 44,
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
                       decoration: BoxDecoration(
-                        color: surfaceVariant,
-                        borderRadius: BorderRadius.circular(24),
+                        color: isDark ? AppColors.darkBorder : AppColors.lightSurfaceVariant,
+                        borderRadius: BorderRadius.circular(22),
+                        border: Border.all(
+                          color: isDark ? AppColors.darkBorder : borderColor,
+                        ),
                       ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: TextField(
-                              controller: _messageController,
-                              style: AppTextStyles.bodyMedium(
-                                color: textColor,
-                              ),
-                              decoration: InputDecoration(
-                                hintText: 'Nhập tin nhắn...',
-                                border: InputBorder.none,
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 10,
-                                ),
-                                hintStyle: AppTextStyles.bodyMedium(
-                                  color: subtextColor,
-                                ),
-                              ),
-                            ),
+                      child: TextField(
+                        controller: _messageController,
+                        style: TextStyle(
+                          color: isDark ? Colors.white : Colors.black,
+                          fontSize: 14,
+                        ),
+                        decoration: InputDecoration(
+                          hintText: 'Nhập tin nhắn...',
+                          hintStyle: TextStyle(
+                            color: isDark ? AppColors.darkOnSurfaceVariant : subtextColor,
+                            fontSize: 13,
                           ),
-                        ],
+                          border: InputBorder.none,
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                        onSubmitted: (_) => _sendMessage(),
                       ),
                     ),
                   ),
                   const SizedBox(width: 8),
-                  // Mic button
-                  GestureDetector(
-                    onTap: () => context.push('/voice'),
-                    child: Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        gradient: AppColors.primaryGradient,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.primary.withValues(alpha: 0.3),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: const Icon(
-                        Icons.mic_rounded,
-                        color: Colors.white,
-                        size: 24,
-                      ),
+                  Container(
+                    width: 42,
+                    height: 42,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: AppColors.primary,
+                    ),
+                    child: IconButton(
+                      icon: const Icon(Icons.send_rounded, color: Colors.white, size: 18),
+                      onPressed: _sendMessage,
                     ),
                   ),
                 ],
@@ -309,123 +308,87 @@ class _ConversationScreenState extends State<ConversationScreen> {
   }
 }
 
-// ─── Action Icon ───
-class _ActionIcon extends StatelessWidget {
-  final IconData icon;
-  final VoidCallback onTap;
-  final String tooltip;
-
-  const _ActionIcon({
-    required this.icon,
-    required this.onTap,
-    required this.tooltip,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return IconButton(
-      onPressed: onTap,
-      icon: Icon(icon, color: AppColors.primary, size: 22),
-      tooltip: tooltip,
-    );
-  }
-}
-
-// ─── Chat Message Model ───
 class _ChatMessage {
   final String text;
   final bool isMe;
   final String time;
 
-  const _ChatMessage({
-    required this.text,
-    required this.isMe,
-    required this.time,
-  });
+  const _ChatMessage({required this.text, required this.isMe, required this.time});
 }
 
-// ─── Chat Bubble Widget ───
 class _ChatBubble extends StatelessWidget {
   final _ChatMessage message;
-  final Color receivedBubbleColor;
-  final Color textColor;
-  final Color subtextColor;
+  final bool isDark;
 
-  const _ChatBubble({
-    required this.message,
-    required this.receivedBubbleColor,
-    required this.textColor,
-    required this.subtextColor,
-  });
+  const _ChatBubble({required this.message, required this.isDark});
 
   @override
   Widget build(BuildContext context) {
+    final isMe = message.isMe;
+
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(vertical: 3),
       child: Row(
-        mainAxisAlignment: message.isMe
-            ? MainAxisAlignment.end
-            : MainAxisAlignment.start,
+        mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          if (!message.isMe) ...[
+          if (!isMe) ...[
             Container(
               width: 28,
               height: 28,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.primary.withValues(alpha: 0.15),
+                color: AppColors.primary.withValues(alpha: isDark ? 0.15 : 0.1),
               ),
-              child: const Icon(
-                Icons.person_rounded,
-                color: AppColors.primary,
-                size: 16,
+              child: Center(
+                child: Text(
+                  'AN',
+                  style: TextStyle(color: AppColors.primary, fontSize: 10, fontWeight: FontWeight.bold),
+                ),
               ),
             ),
             const SizedBox(width: 8),
           ],
           Flexible(
             child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 10,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
-                color: message.isMe
+                color: isMe
                     ? AppColors.primary
-                    : receivedBubbleColor,
+                    : (isDark ? AppColors.darkSurfaceVariant : const Color(0xFFF1F5F9)),
                 borderRadius: BorderRadius.only(
-                  topLeft: const Radius.circular(18),
-                  topRight: const Radius.circular(18),
-                  bottomLeft: Radius.circular(message.isMe ? 18 : 4),
-                  bottomRight: Radius.circular(message.isMe ? 4 : 18),
+                  topLeft: const Radius.circular(16),
+                  topRight: const Radius.circular(16),
+                  bottomLeft: Radius.circular(isMe ? 16 : 4),
+                  bottomRight: Radius.circular(isMe ? 4 : 16),
                 ),
               ),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
+                crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
                 children: [
                   Text(
                     message.text,
-                    style: AppTextStyles.bodyMedium(
-                      color: message.isMe
-                          ? Colors.white
-                          : textColor,
+                    style: TextStyle(
+                      color: isMe ? Colors.white : (isDark ? const Color(0xFFE2E8F0) : AppColors.lightOnSurface),
+                      fontSize: 14,
+                      height: 1.35,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 3),
                   Text(
                     message.time,
-                    style: AppTextStyles.bodySmall(
-                      color: message.isMe
-                          ? Colors.white.withValues(alpha: 0.7)
-                          : subtextColor,
-                    ).copyWith(fontSize: 10),
+                    style: TextStyle(
+                      color: isMe
+                          ? Colors.white.withValues(alpha: 0.6)
+                          : (isDark ? AppColors.darkOnSurfaceVariant : const Color(0xFF94A3B8)),
+                      fontSize: 10,
+                    ),
                   ),
                 ],
               ),
             ),
           ),
-          if (message.isMe) const SizedBox(width: 8),
+          if (isMe) const SizedBox(width: 8),
         ],
       ),
     );

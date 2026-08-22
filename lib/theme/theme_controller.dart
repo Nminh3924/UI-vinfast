@@ -5,7 +5,7 @@ class ThemeController {
   ThemeController._();
 
   static final ValueNotifier<ThemeMode> themeMode =
-      ValueNotifier<ThemeMode>(ThemeMode.light);
+      ValueNotifier<ThemeMode>(ThemeMode.dark);
 
   static bool get isDark => themeMode.value == ThemeMode.dark;
 

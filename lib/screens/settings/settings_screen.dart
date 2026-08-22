@@ -60,15 +60,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       Container(
                         width: 60,
                         height: 60,
-                        decoration: const BoxDecoration(
+                        decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          gradient: AppColors.primaryGradient,
+                          color: isDark
+                              ? AppColors.darkSurfaceVariant
+                              : const Color(0xFFE2E8F0),
                         ),
-                        child: const Center(
+                        child: Center(
                           child: Text(
                             'M',
                             style: TextStyle(
-                              color: Colors.white,
+                              color: isDark ? Colors.white : AppColors.lightOnSurface,
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
                             ),
